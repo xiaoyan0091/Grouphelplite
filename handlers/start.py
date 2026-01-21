@@ -77,8 +77,13 @@ Choose a category below to explore commands:
 
         buttons = InlineKeyboardMarkup(buttons_list)
 
-        media = InputMediaPhoto(media=START_IMAGE, caption=text)
-        await message.edit_media(media=media, reply_markup=buttons)
+        if message.text:
+            # For /help command, send a new photo
+            await message.reply_photo(START_IMAGE, caption=text, reply_markup=buttons)
+        else:
+            # For callback queries, edit the existing message
+            media = InputMediaPhoto(media=START_IMAGE, caption=text)
+            await message.edit_media(media=media, reply_markup=buttons)
 
 # ==========================================================
 # Help Command and Callback_query
