@@ -8,6 +8,7 @@ load_dotenv()
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+JADWALBOT_TOKEN = os.getenv("JADWALBOT_TOKEN", "")
 
 # MongoDB Configuration - coba beberapa nama variabel yang umum
 MONGO_URI = os.getenv(

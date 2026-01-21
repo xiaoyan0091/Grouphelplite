@@ -23,43 +23,19 @@ def register_handlers(app: Client):
 # Start Message
 # ==========================================================
     async def send_start_menu(message, user):
-        text = f"""
-
-   ✨ Hello {user}! ✨
-
-👋 I am Nomad 🤖 
-
-Highlights:
-─────────────────────────────
-- Smart Anti-Spam & Link Shield
-- Adaptive Lock System (URLs, Media, Language & more)
-- Modular & Scalable Protection
-- Sleek UI with Inline Controls
-
-» More New Features coming soon ...
-"""
+        text = f"✨ Hello {user}! I am Nomad 🤖, a group management bot.\n\n"
+        text += "Use the /help command to see what I can do."
 
         buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("⚒️ Add to Group ⚒️", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
-            [
-                InlineKeyboardButton("⌂ Support ⌂", url=SUPPORT_GROUP),
-                InlineKeyboardButton("⌂ Update ⌂", url=UPDATE_CHANNEL),
-            ],
-            [
-                InlineKeyboardButton("※ ŎŴɳēŔ ※", url=f"tg://user?id={OWNER_ID}"),
-                InlineKeyboardButton("Repo", url="https://github.com/LearningBotsOfficial/Nomade"),
-                
-            ],
-            [InlineKeyboardButton("📚 Help Commands 📚", callback_data="help")]
+            [InlineKeyboardButton("⌂ Support ⌂", url=SUPPORT_GROUP)]
         ])
 
-        # If /start command, send a new photo
+        # If /start command, send a new message
         if message.text:
-            await message.reply_photo(START_IMAGE, caption=text, reply_markup=buttons)
+            await message.reply_text(text, reply_markup=buttons)
         else:
             # If callback, edit the same message
-            media = InputMediaPhoto(media=START_IMAGE, caption=text)
-            await message.edit_media(media=media, reply_markup=buttons)
+            await message.edit_text(text, reply_markup=buttons)
 
 # ==========================================================
 # Start Command
@@ -73,7 +49,9 @@ Highlights:
 # ==========================================================
 # Help Menu Message
 # ==========================================================
-    async def send_help_menu(message):
+    async def send_help_menu(message, user_id):
+        is_owner = (user_id == OWNER_ID)
+
         text = """
 ╔══════════════════╗
      Help Menu
@@ -82,26 +60,51 @@ Highlights:
 Choose a category below to explore commands:
 ─────────────────────────────
 """
-        buttons = InlineKeyboardMarkup([
+        buttons_list = [
             [
                 InlineKeyboardButton("⌂ Greetings ⌂", callback_data="greetings"),
                 InlineKeyboardButton("⌂ Locks ⌂", callback_data="locks"),
             ],
             [
                 InlineKeyboardButton("⌂ Moderation ⌂", callback_data="moderation")
-            ],
-            [InlineKeyboardButton("🔙 Back", callback_data="back_to_start")]
-        ])
+            ]
+        ]
+
+        if is_owner:
+            buttons_list.append([InlineKeyboardButton("🤖 Admin Panel 🤖", callback_data="admin_panel")])
+
+        buttons_list.append([InlineKeyboardButton("🔙 Back", callback_data="back_to_start")])
+
+        buttons = InlineKeyboardMarkup(buttons_list)
 
         media = InputMediaPhoto(media=START_IMAGE, caption=text)
         await message.edit_media(media=media, reply_markup=buttons)
 
 # ==========================================================
-# Help Callback_query
+# Help Command and Callback_query
 # ==========================================================
+    @app.on_message(filters.private & filters.command("help"))
+    async def help_command(client, message):
+        await send_help_menu(message, message.from_user.id)
+
     @app.on_callback_query(filters.regex("help"))
     async def help_callback(client, callback_query):
-        await send_help_menu(callback_query.message)
+        await send_help_menu(callback_query.message, callback_query.from_user.id)
+        await callback_query.answer()
+
+    @app.on_callback_query(filters.regex("admin_panel"))
+    async def admin_panel_callback(client, callback_query):
+        text = """
+    **Admin Panel**
+
+    This panel is for the bot owner.
+    You can access the schedule bot panel by using the `/panel` command.
+    """
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Back", callback_data="help")]
+        ])
+        media = InputMediaPhoto(media=START_IMAGE, caption=text)
+        await callback_query.message.edit_media(media=media, reply_markup=buttons)
         await callback_query.answer()
 
 # ==========================================================

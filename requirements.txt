@@ -11,3 +11,6 @@ tgcrypto==1.2.5
 motor==3.1.1
 pymongo[srv]==4.6.3
 
+requests
+pytz
+python-telegram-bot
